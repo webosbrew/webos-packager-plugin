@@ -108,7 +108,7 @@ export class WebOSPackagerPlugin {
 		for (const [asset, source] of Object.entries(assets)) {
 			const buffer = source.buffer();
 			const name = `usr/palm/applications/${this.options.id}/${asset}`;
-			const mode = this.options.setExecutableBit && this.isExecutable(buffer) ? 755 : 644;
+			const mode = this.options.setExecutableBit && this.isExecutable(buffer) ? 0o755 : 0o644;
 
 			tarball.entry({ name, mode }, buffer);
 		}
