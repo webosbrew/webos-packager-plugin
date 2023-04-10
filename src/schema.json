@@ -2,7 +2,7 @@
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
-		"name",
+		"id",
 		"version"
 	],
 	"if": {
@@ -17,14 +17,14 @@
 	},
 	"then": {
 		"required": [
-			"name",
+			"id",
 			"version",
 			"description",
 			"metadata"
 		]
 	},
 	"properties": {
-		"name": {
+		"id": {
 			"type": "string"
 		},
 		"version": {

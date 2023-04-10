@@ -31,7 +31,7 @@ type MaybeHomebrewOptionsMixin = {
 };
 
 export type WebOSPackagerOptions = MaybeHomebrewOptionsMixin & {
-	name: string;
+	id: string;
 	version: string;
 	filename?: string;
 	description?: string;
@@ -65,7 +65,7 @@ export class WebOSPackagerPlugin {
 				async () => {
 					await this.appendDataSection(compilation.assets);
 
-					const filename = this.options.filename ?? `${this.options.name}_${this.options.version}_all.ipk`;
+					const filename = this.options.filename ?? `${this.options.id}_${this.options.version}_all.ipk`;
 					const buffer = this.ar.buffer();
 
 					compilation.emitAsset(filename, new sources.RawSource(buffer));
@@ -77,7 +77,7 @@ export class WebOSPackagerPlugin {
 					const sha256 = createHash('sha256').update(buffer).digest('hex');
 
 					compilation.emitAsset(
-						`${this.options.name}.manifest.json`,
+						`${this.options.id}.manifest.json`,
 						new sources.RawSource(JSON.stringify({
 							...this.createHomebrewManifest(),
 							ipkUrl: filename,
@@ -107,18 +107,18 @@ export class WebOSPackagerPlugin {
 
 		for (const [asset, source] of Object.entries(assets)) {
 			const buffer = source.buffer();
-			const name = `usr/palm/applications/${this.options.name}/${asset}`;
+			const name = `usr/palm/applications/${this.options.id}/${asset}`;
 			const mode = this.options.setExecutableBit && this.isExecutable(buffer) ? 755 : 644;
 
 			tarball.entry({ name, mode }, buffer);
 		}
 
 		tarball.entry(
-			{ name: `usr/palm/packages/${this.options.name}/packageinfo.json` },
+			{ name: `usr/palm/packages/${this.options.id}/packageinfo.json` },
 			JSON.stringify({
-				id: this.options.name,
+				id: this.options.id,
 				version: this.options.version,
-				app: this.options.name,
+				app: this.options.id,
 			}, null, '\t'),
 		);
 
@@ -144,7 +144,7 @@ export class WebOSPackagerPlugin {
 
 	private serializeControlMeta() {
 		const control = {
-			'Package': this.options.name,
+			'Package': this.options.id,
 			'Version': this.options.version,
 			'Section': 'misc',
 			'Priority': 'optional',
@@ -164,7 +164,7 @@ export class WebOSPackagerPlugin {
 
 	private createHomebrewManifest() {
 		return {
-			id: this.options.name,
+			id: this.options.id,
 			version: this.options.version,
 			type: this.options.metadata!.type,
 			title: this.options.metadata!.title,
