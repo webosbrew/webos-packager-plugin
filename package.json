@@ -1,7 +1,7 @@
 {
 	"name": "@kitsuned/webos-packager-plugin",
 	"version": "1.0.3",
-	"description": "Webpack plugin to create IPK file from emitted files. Targeted to webOS devices.",
+	"description": "Webpack plugin that packages emitted files to IPK file that can be installed on LG webOS TV.",
 	"license": "MIT",
 	"main": "dist/index.js",
 	"repository": "kitsuned/webos-packager-plugin",
