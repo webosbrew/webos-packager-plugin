@@ -175,3 +175,5 @@ export class WebOSPackagerPlugin {
 		};
 	}
 }
+
+export default WebOSPackagerPlugin;
