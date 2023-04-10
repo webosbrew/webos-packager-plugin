@@ -1,0 +1,32 @@
+{
+	"name": "@kitsuned/webos-packager-plugin",
+	"version": "1.0.3",
+	"description": "Webpack plugin to create IPK file from emitted files. Targeted to webOS devices.",
+	"license": "MIT",
+	"main": "dist/index.js",
+	"repository": "kitsuned/webos-packager-plugin",
+	"private": false,
+	"scripts": {
+		"build": "tsc"
+	},
+	"files": [
+		"dist",
+		"package.json"
+	],
+	"engines": {
+		"node": ">= 14.10"
+	},
+	"dependencies": {
+		"schema-utils": "^4.0.0",
+		"tar-stream": "^3.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^18.15.11",
+		"@types/tar-stream": "^2.2.2",
+		"@types/webpack": "^5.28.1",
+		"typescript": "^4.9.5"
+	},
+	"peerDependencies": {
+		"webpack": "5.*"
+	}
+}

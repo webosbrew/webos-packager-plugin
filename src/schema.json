@@ -1,0 +1,76 @@
+{
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"name",
+		"version"
+	],
+	"if": {
+		"properties": {
+			"emitManifest": {
+				"const": true
+			}
+		},
+		"required": [
+			"emitManifest"
+		]
+	},
+	"then": {
+		"required": [
+			"name",
+			"version",
+			"description",
+			"metadata"
+		]
+	},
+	"properties": {
+		"name": {
+			"type": "string"
+		},
+		"version": {
+			"type": "string",
+			"pattern": "^(\\d+\\.)?(\\d+\\.)?(\\*|\\d+)$"
+		},
+		"filename": {
+			"type": "string"
+		},
+		"description": {
+			"type": "string"
+		},
+		"emitManifest": {
+			"type": "boolean"
+		},
+		"setExecutableBit": {
+			"type": "boolean"
+		},
+		"metadata": {
+			"type": "object",
+			"required": [
+				"title",
+				"iconUrl",
+				"sourceUrl"
+			],
+			"properties": {
+				"title": {
+					"type": "string"
+				},
+				"iconUrl": {
+					"type": "string"
+				},
+				"sourceUrl": {
+					"type": "string"
+				},
+				"rootRequired": {
+					"type": "boolean"
+				},
+				"type": {
+					"type": "string",
+					"enum": [
+						"web",
+						"native"
+					]
+				}
+			}
+		}
+	}
+}
