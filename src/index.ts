@@ -1,5 +1,5 @@
-import { createGzip, constants } from 'node:zlib';
-import { createHash } from 'node:crypto';
+import { createGzip, constants } from 'zlib';
+import { createHash } from 'crypto';
 
 import { pack, type Pack } from 'tar-stream';
 
@@ -157,13 +157,10 @@ export class WebOSPackagerPlugin {
 			'webOS-Package-Format-Version': 2,
 		};
 
-		let serialized = '';
-
-		for (const [key, value] of Object.entries(control)) {
-			serialized += `${key}: ${value}\n`;
-		}
-
-		return serialized;
+		return Object.entries(control).reduce(
+			(accumulator, [key, value]) => accumulator + `${key}: ${value}\n`,
+			'',
+		);
 	}
 
 	private createHomebrewManifest() {
