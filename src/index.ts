@@ -126,6 +126,10 @@ export class WebOSPackagerPlugin {
 	}
 
 	private isExecutable(buffer: Buffer): boolean {
+		if (buffer.length < 4) {
+			return false;
+		}
+
 		return buffer.readUInt32BE() === 0x7f454c46 // elf
 			|| buffer.readUInt16BE() === 0x2321; // shebang
 	}
