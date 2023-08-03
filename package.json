@@ -17,6 +17,7 @@
 		"node": ">= 14.10"
 	},
 	"dependencies": {
+		"ix": "^5.0.0",
 		"schema-utils": "^4.0.0",
 		"tar-stream": "^3.0.0"
 	},
