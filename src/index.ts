@@ -19,7 +19,27 @@ import type {
 	WebpackEnvironment,
 } from './declarations';
 
-class AssetPackagerPlugin {
+abstract class AssetPlugin {
+	protected readonly abstract pluginName: string;
+
+	protected constructor(private readonly stage: number) {}
+
+	protected abstract hook(compilation: Compilation): Promise<void> | void;
+
+	public apply(compiler: Compiler) {
+		compiler.hooks.thisCompilation.tap(this.pluginName, compilation => {
+			compilation.hooks.processAssets.tapPromise(
+				{
+					name: this.pluginName,
+					stage: this.stage,
+				},
+				async () => await this.hook(compilation),
+			);
+		});
+	}
+}
+
+class AssetPackagerPlugin extends AssetPlugin {
 	protected pluginName = 'AssetPackagerPlugin';
 
 	private sinks: AsyncSink<SinkSource>[] = [];
@@ -29,55 +49,47 @@ class AssetPackagerPlugin {
 		private readonly options: PackagerOptions | null,
 		private readonly metadata: PackageMetadata,
 	) {
+		super(Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER);
+
 		this.builder.setMeta(metadata);
-	}
-
-	public apply(compiler: Compiler) {
-		compiler.hooks.thisCompilation.tap(this.pluginName, compilation => {
-			compilation.hooks.processAssets.tapPromise(
-				{
-					name: this.pluginName,
-					stage: Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER,
-				},
-				async () => {
-					// @ts-ignore bad typing
-					const it: AsyncIterableX<SinkSource> = merge(...this.sinks);
-
-					for await (const { namespace, assets } of it) {
-						const map = Object.entries(assets).reduce(
-							(accumulator, [path, asset]) => ({
-								...accumulator,
-								[path]: asset.buffer(),
-							}),
-							{} as Record<string, Buffer>,
-						);
-
-						this.builder.addEntries(namespace, map);
-					}
-
-					const filename = this.options?.filename ?? `${this.metadata.id}_${this.metadata.version}_all.ipk`;
-					const buffer = await this.builder.buffer();
-
-					compilation.emitAsset(filename, new sources.RawSource(buffer));
-
-					if (this.options?.emitManifest) {
-						const sha256 = createHash('sha256').update(buffer).digest('hex');
-
-						compilation.emitAsset(
-							`${this.metadata.id}.manifest.json`,
-							this.createManifestAsset({
-								ipkUrl: filename,
-								ipkHash: { sha256 },
-							}),
-						);
-					}
-				},
-			);
-		});
 	}
 
 	public register(sink: AsyncSink<SinkSource>) {
 		this.sinks.push(sink);
+	}
+
+	protected async hook(compilation: Compilation) {
+		// @ts-ignore weird typing
+		const it: AsyncIterableX<SinkSource> = merge(...this.sinks);
+
+		for await (const { namespace, assets } of it) {
+			const map = Object.entries(assets).reduce(
+				(accumulator, [path, asset]) => ({
+					...accumulator,
+					[path]: asset.buffer(),
+				}),
+				{} as Record<string, Buffer>,
+			);
+
+			this.builder.addEntries(namespace, map);
+		}
+
+		const filename = this.options?.filename ?? `${this.metadata.id}_${this.metadata.version}_all.ipk`;
+		const buffer = await this.builder.buffer();
+
+		compilation.emitAsset(filename, new sources.RawSource(buffer));
+
+		if (this.options?.emitManifest) {
+			const sha256 = createHash('sha256').update(buffer).digest('hex');
+
+			compilation.emitAsset(
+				`${this.metadata.id}.manifest.json`,
+				this.createManifestAsset({
+					ipkUrl: filename,
+					ipkHash: { sha256 },
+				}),
+			);
+		}
 	}
 
 	private createManifestAsset(fileInfo: { ipkUrl: string, ipkHash: { sha256: string } }) {
@@ -103,32 +115,24 @@ class AssetPackagerPlugin {
 	}
 }
 
-class AssetHookPlugin {
+class AssetHookPlugin extends AssetPlugin {
 	protected pluginName = 'AssetHookPlugin';
 
 	private sink = new AsyncSink<SinkSource>();
 
 	public constructor(packager: AssetPackagerPlugin, private readonly namespace: Namespace) {
+		super(Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE);
+
 		packager.register(this.sink);
 	}
 
-	public apply(compiler: Compiler) {
-		compiler.hooks.thisCompilation.tap(this.pluginName, compilation => {
-			compilation.hooks.processAssets.tap(
-				{
-					name: this.pluginName,
-					stage: Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE,
-				},
-				() => {
-					this.sink.write({
-						namespace: this.namespace,
-						assets: compilation.assets,
-					});
-
-					this.sink.end();
-				},
-			);
+	protected hook(compilation: Compilation) {
+		this.sink.write({
+			namespace: this.namespace,
+			assets: compilation.assets,
 		});
+
+		this.sink.end();
 	}
 }
 
