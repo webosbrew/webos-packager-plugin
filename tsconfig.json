@@ -9,6 +9,10 @@
 		"resolveJsonModule": true,
 		"strict": true,
 		"declaration": true,
+		"skipLibCheck": true,
 		"outDir": "./dist"
-	}
+	},
+	"include": [
+		"src"
+	]
 }
