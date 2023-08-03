@@ -144,8 +144,6 @@ export const hoc =
 					id: { enumerable: false },
 				});
 
-			const app = invoke(definition.app);
-
 			const packager = new AssetPackagerPlugin(
 				definition.options ?? null,
 				{
@@ -154,6 +152,7 @@ export const hoc =
 				},
 			);
 
+			const app = invoke(definition.app);
 			const hook = new AssetHookPlugin(packager, { id: app.id, type: 'app' });
 
 			app.plugins ??= [];
