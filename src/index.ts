@@ -2,11 +2,16 @@ import { createHash } from 'crypto';
 
 import { Compilation, sources, type Compiler } from 'webpack';
 
-import { AsyncIterableX } from 'ix/asynciterable/asynciterablex';
+import { validate } from 'schema-utils';
+import type { Schema } from 'schema-utils/declarations/validate';
+
 import { AsyncSink } from 'ix/asynciterable/asyncsink';
 import { merge } from 'ix/asynciterable/merge';
+import type { AsyncIterableX } from 'ix/asynciterable/asynciterablex';
 
 import { IPKBuilder } from './ipk';
+
+import schema from './schema.json';
 
 import type {
 	FlavoredConfig,
@@ -143,6 +148,8 @@ export const hoc =
 				Object.defineProperties(typeof config === 'function' ? config(...argv) : config, {
 					id: { enumerable: false },
 				});
+
+			validate(schema as Schema, definition);
 
 			const packager = new AssetPackagerPlugin(
 				definition.options ?? null,

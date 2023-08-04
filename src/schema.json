@@ -3,26 +3,9 @@
 	"additionalProperties": false,
 	"required": [
 		"id",
-		"version"
+		"version",
+		"app"
 	],
-	"if": {
-		"properties": {
-			"emitManifest": {
-				"const": true
-			}
-		},
-		"required": [
-			"emitManifest"
-		]
-	},
-	"then": {
-		"required": [
-			"id",
-			"version",
-			"description",
-			"metadata"
-		]
-	},
 	"properties": {
 		"id": {
 			"type": "string"
@@ -31,44 +14,64 @@
 			"type": "string",
 			"pattern": "^(\\d+\\.)?(\\d+\\.)?(\\*|\\d+)$"
 		},
-		"filename": {
-			"type": "string"
+		"app": {
+			"type": "object"
 		},
-		"description": {
-			"type": "string"
+		"services": {
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
 		},
-		"emitManifest": {
-			"type": "boolean"
-		},
-		"setExecutableBit": {
-			"type": "boolean"
-		},
-		"metadata": {
-			"type": "object",
-			"required": [
-				"title",
-				"iconUrl",
-				"sourceUrl"
-			],
+		"options": {
+			"if": {
+				"properties": {
+					"emitManifest": {
+						"const": true
+					}
+				},
+				"required": [
+					"emitManifest"
+				]
+			},
+			"then": {
+				"required": [
+					"manifest"
+				]
+			},
 			"properties": {
-				"title": {
-					"type": "string"
-				},
-				"iconUrl": {
-					"type": "string"
-				},
-				"sourceUrl": {
-					"type": "string"
-				},
-				"rootRequired": {
-					"type": "boolean"
-				},
-				"type": {
-					"type": "string",
-					"enum": [
-						"web",
-						"native"
-					]
+				"manifest": {
+					"type": "object",
+					"required": [
+						"title",
+						"description",
+						"iconUrl",
+						"sourceUrl"
+					],
+					"properties": {
+						"title": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						},
+						"iconUrl": {
+							"type": "string"
+						},
+						"sourceUrl": {
+							"type": "string"
+						},
+						"rootRequired": {
+							"type": "boolean"
+						},
+						"type": {
+							"type": "string",
+							"enum": [
+								"web",
+								"native"
+							]
+						}
+					}
 				}
 			}
 		}
