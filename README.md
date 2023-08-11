@@ -6,8 +6,42 @@ Additionally, this plugin can generate a webOS Homebrew Channel manifest by usin
 
 ### Example
 
+##### HOC
+
 ```typescript
-import WebOSPackagerPlugin from '@kitsuned/webos-packager-plugin';
+import { hoc } from '@kitsuned/webos-packager-plugin';
+
+export default hoc({
+	id: 'org.acme.product',
+	version: '1.0.0',
+	options: {
+		// if you want to publish app in homebrew channel repo
+		emitManifest: true,
+		manifest: {
+			title: 'ACME Goods',
+			description: '',
+			iconUrl: '',
+			sourceUrl: '',
+		},
+	},
+	app: {
+		id: 'org.acme.product',
+		// ... webpack configuation
+	},
+	services: [
+		{
+			id: 'org.acme.product.service',
+			// ... webpack configuation
+		},
+		// ... other services
+	],
+});
+```
+
+##### Plugin
+
+```typescript
+import { WebOSPackagerPlugin } from '@kitsuned/webos-packager-plugin';
 
 export default {
 	// ...
