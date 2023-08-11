@@ -28,9 +28,8 @@ export class IPKBuilder {
 		this.ar.append('debian-binary', '2.0\n');
 	}
 
-	public setMeta(metadata: PackageMetadata): IPKBuilder {
+	public setMeta(metadata: PackageMetadata): void {
 		this.meta = metadata;
-		return this;
 	}
 
 	public addEntries({ id, type }: Namespace, assets: { [path: string]: Buffer }) {
