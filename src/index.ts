@@ -19,12 +19,13 @@ import type {
 	Namespace,
 	PackageMetadata,
 	PackagerOptions,
+	Plugin,
 	SinkSource,
 	WebpackArgv,
 	WebpackEnvironment,
 } from './declarations';
 
-abstract class AssetPlugin {
+abstract class AssetPlugin implements Plugin {
 	protected readonly abstract pluginName: string;
 
 	protected constructor(private readonly stage: number) {}
@@ -138,6 +139,21 @@ class AssetHookPlugin extends AssetPlugin {
 		});
 
 		this.sink.end();
+	}
+}
+
+export class WebOSPackagerPlugin implements Plugin {
+	private readonly packager: AssetPackagerPlugin;
+	private readonly hook: AssetHookPlugin;
+
+	public constructor(options: PackageMetadata & PackagerOptions & Namespace) {
+		this.packager = new AssetPackagerPlugin(options, options);
+		this.hook = new AssetHookPlugin(this.packager, options);
+	}
+
+	public apply(compiler: Compiler) {
+		this.packager.apply(compiler);
+		this.hook.apply(compiler);
 	}
 }
 

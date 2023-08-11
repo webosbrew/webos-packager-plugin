@@ -1,4 +1,4 @@
-import type { Compilation, Configuration } from 'webpack';
+import type { Compiler, Compilation, Configuration } from 'webpack';
 
 export type WebpackEnvironment<Argv extends Record<string, any>> = Argv;
 
@@ -14,6 +14,10 @@ type WebpackConfigurationFn<
 type Config<Flavor extends Record<string, any>> =
 	| (Configuration & Flavor)
 	| WebpackConfigurationFn<Flavor, {}>;
+
+export type Plugin = {
+	apply(compiler: Compiler): void;
+};
 
 export type FlavoredConfig = Config<{ id: string }>;
 
