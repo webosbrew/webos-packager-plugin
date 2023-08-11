@@ -1,3 +1,5 @@
+import { join } from 'path';
+
 import { hoc } from '../src';
 
 export default hoc({
@@ -18,6 +20,7 @@ export default hoc({
 		entry: './src/app.js',
 		output: {
 			filename: 'main.js',
+			path: join(__dirname, 'dist/hoc'),
 		},
 	},
 	services: [{
@@ -26,6 +29,7 @@ export default hoc({
 		entry: './src/service.js',
 		output: {
 			filename: 'service.js',
+			path: join(__dirname, 'dist/hoc'),
 		},
 	}],
 });
