@@ -105,18 +105,16 @@ export class IPKBuilder {
 	}
 
 	private async appendDataSection() {
+		const packageInfo = {
+			id: this.meta!.id,
+			version: this.meta!.version,
+			app: this.namespaces.app.values().next().value!,
+			services: Array.from(this.namespaces.service.values()),
+		};
+
 		this.data.entry(
 			{ name: `usr/palm/packages/${this.meta!.id}/packageinfo.json` },
-			JSON.stringify(
-				{
-					id: this.meta!.id,
-					version: this.meta!.version,
-					app: this.namespaces.app.values().next().value!,
-					services: Array.from(this.namespaces.service.values()),
-				},
-				null,
-				'\t',
-			),
+			JSON.stringify(packageInfo, null, '\t'),
 		);
 
 		this.ar.append('data.tar.gz', await this.collectTarball(this.data));
