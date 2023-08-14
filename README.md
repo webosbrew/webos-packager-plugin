@@ -1,4 +1,4 @@
-# @kitsuned/webos-packager-plugin
+# @webosbrew/webos-packager-plugin
 
 Webpack plugin that packages emitted files to IPK file that can be installed on LG webOS TV.
 
@@ -9,7 +9,7 @@ Additionally, this plugin can generate a webOS Homebrew Channel manifest by usin
 ##### HOC
 
 ```typescript
-import { hoc } from '@kitsuned/webos-packager-plugin';
+import { hoc } from '@webosbrew/webos-packager-plugin';
 
 export default hoc({
 	id: 'org.acme.product',
@@ -41,10 +41,10 @@ export default hoc({
 ##### Plugin
 
 ```typescript
-import { WebOSPackagerPlugin } from '@kitsuned/webos-packager-plugin';
+import { WebOSPackagerPlugin } from '@webosbrew/webos-packager-plugin';
 
 export default {
-	// ...
+	// ... webpack configuation
 	plugins: [
 		new WebOSPackagerPlugin({
 			id: 'com.example.app',
