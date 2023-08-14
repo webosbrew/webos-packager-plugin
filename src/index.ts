@@ -41,7 +41,7 @@ class AssetPackagerPlugin extends AssetPlugin {
 	protected pluginName = 'AssetPackagerPlugin';
 
 	private promises: PromiseLike<HookDeferredValue>[] = [];
-	private builder = new IPKBuilder();
+	private builder: IPKBuilder;
 
 	public constructor(
 		private readonly options: PackagerOptions | null,
@@ -49,7 +49,7 @@ class AssetPackagerPlugin extends AssetPlugin {
 	) {
 		super(Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER);
 
-		this.builder.setMeta(metadata);
+		this.builder = new IPKBuilder(metadata);
 	}
 
 	public register(promise: PromiseLike<HookDeferredValue>) {

@@ -22,14 +22,8 @@ export class IPKBuilder {
 		service: new Set(),
 	};
 
-	private meta?: PackageMetadata;
-
-	public constructor() {
+	public constructor(private readonly metadata: PackageMetadata) {
 		this.ar.append('debian-binary', '2.0\n');
-	}
-
-	public setMeta(metadata: PackageMetadata): void {
-		this.meta = metadata;
 	}
 
 	public addEntries({ id, type }: Namespace, assets: { [path: string]: Buffer }) {
@@ -46,7 +40,7 @@ export class IPKBuilder {
 	}
 
 	public async buffer(): Promise<Buffer> {
-		if (!this.meta) {
+		if (!this.metadata) {
 			throw new IPKBuilderError('Package metadata not set.');
 		}
 
@@ -85,8 +79,8 @@ export class IPKBuilder {
 		const tarball = pack();
 
 		const control: ControlSection = {
-			Package: this.meta!.id,
-			Version: this.meta!.version,
+			Package: this.metadata.id,
+			Version: this.metadata.version,
 			Section: 'misc',
 			Priority: 'optional',
 			Architecture: 'all',
@@ -106,14 +100,14 @@ export class IPKBuilder {
 
 	private async appendDataSection() {
 		const packageInfo = {
-			id: this.meta!.id,
-			version: this.meta!.version,
+			id: this.metadata.id,
+			version: this.metadata.version,
 			app: this.namespaces.app.values().next().value!,
 			services: Array.from(this.namespaces.service.values()),
 		};
 
 		this.data.entry(
-			{ name: `usr/palm/packages/${this.meta!.id}/packageinfo.json` },
+			{ name: `usr/palm/packages/${this.metadata.id}/packageinfo.json` },
 			JSON.stringify(packageInfo, null, '\t'),
 		);
 
