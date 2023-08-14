@@ -36,7 +36,7 @@ export type ControlSection = Record<
 	string | number
 >;
 
-export type SinkSource = {
+export type HookDeferredValue = {
 	namespace: Namespace;
 	assets: Compilation['assets'];
 };

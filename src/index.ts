@@ -2,11 +2,8 @@ import { createHash } from 'crypto';
 
 import { Compilation, sources, type Compiler } from 'webpack';
 
-import { AsyncSink } from 'ix/asynciterable/asyncsink';
-import { merge } from 'ix/asynciterable/merge';
-import type { AsyncIterableX } from 'ix/asynciterable/asynciterablex';
-
 import { IPKBuilder } from './ipk';
+import { Deferred } from './utils';
 
 import type {
 	FlavoredConfig,
@@ -15,7 +12,7 @@ import type {
 	PackageMetadata,
 	PackagerOptions,
 	Plugin,
-	SinkSource,
+	HookDeferredValue,
 	WebpackArgv,
 	WebpackEnvironment,
 } from './declarations';
@@ -43,7 +40,7 @@ abstract class AssetPlugin implements Plugin {
 class AssetPackagerPlugin extends AssetPlugin {
 	protected pluginName = 'AssetPackagerPlugin';
 
-	private sinks: AsyncSink<SinkSource>[] = [];
+	private promises: PromiseLike<HookDeferredValue>[] = [];
 	private builder = new IPKBuilder();
 
 	public constructor(
@@ -55,15 +52,14 @@ class AssetPackagerPlugin extends AssetPlugin {
 		this.builder.setMeta(metadata);
 	}
 
-	public register(sink: AsyncSink<SinkSource>) {
-		this.sinks.push(sink);
+	public register(promise: PromiseLike<HookDeferredValue>) {
+		this.promises.push(promise);
 	}
 
 	protected async hook(compilation: Compilation) {
-		// @ts-ignore weird typing
-		const it: AsyncIterableX<SinkSource> = merge(...this.sinks);
+		const compilations = await Promise.all(this.promises);
 
-		for await (const { namespace, assets } of it) {
+		for await (const { namespace, assets } of compilations) {
 			const map = Object.entries(assets).reduce(
 				(accumulator, [path, asset]) => ({
 					...accumulator,
@@ -119,21 +115,21 @@ class AssetPackagerPlugin extends AssetPlugin {
 class AssetHookPlugin extends AssetPlugin {
 	protected pluginName = 'AssetHookPlugin';
 
-	private sink = new AsyncSink<SinkSource>();
+	private deferred = new Deferred<HookDeferredValue>();
 
-	public constructor(packager: AssetPackagerPlugin, private readonly namespace: Namespace) {
+	public constructor(private readonly namespace: Namespace) {
 		super(Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE);
+	}
 
-		packager.register(this.sink);
+	public get promise() {
+		return this.deferred.promise;
 	}
 
 	protected hook(compilation: Compilation) {
-		this.sink.write({
+		this.deferred.resolve({
 			namespace: this.namespace,
 			assets: compilation.assets,
 		});
-
-		this.sink.end();
 	}
 }
 
@@ -143,7 +139,9 @@ export class WebOSPackagerPlugin implements Plugin {
 
 	public constructor(options: PackageMetadata & PackagerOptions & Namespace) {
 		this.packager = new AssetPackagerPlugin(options, options);
-		this.hook = new AssetHookPlugin(this.packager, options);
+		this.hook = new AssetHookPlugin(options);
+
+		this.packager.register(this.hook.promise);
 	}
 
 	public apply(compiler: Compiler) {
@@ -169,17 +167,21 @@ export const hoc =
 			);
 
 			const app = invoke(definition.app);
-			const hook = new AssetHookPlugin(packager, { id: app.id, type: 'app' });
+			const hook = new AssetHookPlugin({ id: app.id, type: 'app' });
 
 			app.plugins ??= [];
 			app.plugins.push(packager, hook);
 
+			packager.register(hook.promise);
+
 			const services = definition.services?.map(service => {
 				const svc = invoke(service);
-				const hook = new AssetHookPlugin(packager, { id: svc.id, type: 'service' });
+				const hook = new AssetHookPlugin({ id: svc.id, type: 'service' });
 
 				svc.plugins ??= [];
 				svc.plugins.push(hook);
+
+				packager.register(hook.promise);
 
 				return svc;
 			});
