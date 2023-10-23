@@ -1,7 +1,7 @@
 {
 	"name": "@webosbrew/webos-packager-plugin",
-	"version": "2.0.2",
-	"description": "Webpack plugin that packages emitted files to IPK file that can be installed on LG webOS TV.",
+	"version": "2.0.3",
+	"description": "Pack applications for webOS on the fly.",
 	"license": "MIT",
 	"main": "dist/index.js",
 	"repository": "github:webosbrew/webos-packager-plugin",
