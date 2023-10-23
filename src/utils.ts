@@ -1,3 +1,5 @@
+import { dirname } from 'path/posix';
+
 export class Deferred<T> {
 	public promise: Promise<T>;
 	public resolve!: (value: T | PromiseLike<T>) => void;
@@ -10,3 +12,14 @@ export class Deferred<T> {
 		});
 	}
 }
+
+export const getDirectoryParents = (dir: string) => {
+	const parents: string[] = [];
+
+	while (dir !== '.') {
+		parents.push(dir);
+		dir = dirname(dir);
+	}
+
+	return parents.reverse();
+};

@@ -1,8 +1,10 @@
 import { constants, createGzip } from 'zlib';
+import { dirname, join } from 'path/posix';
 
 import { Pack, pack } from 'tar-stream';
 
 import { ArWriter } from './ar';
+import { getDirectoryParents } from './utils';
 
 import type { ControlSection, Namespace, PackageMetadata } from './declarations';
 
@@ -21,6 +23,7 @@ export class IPKBuilder {
 		app: new Set(),
 		service: new Set(),
 	};
+	private readonly createdParents = new Set<string>();
 
 	public constructor(private readonly metadata: PackageMetadata) {
 		this.ar.append('debian-binary', '2.0\n');
@@ -28,8 +31,21 @@ export class IPKBuilder {
 
 	public addEntries({ id, type }: Namespace, assets: { [path: string]: Buffer }) {
 		const root = `usr/palm/${NAMESPACE_MAP[type]}/${id}`;
+		const tree = new Set<string>(getDirectoryParents(root));
 
 		this.namespaces[type].add(id);
+
+		for (const path in assets) {
+			tree.add(join(root, dirname(path)));
+		}
+
+		for (const name of tree) {
+			if (!this.createdParents.has(name)) {
+				this.data.entry({ name, type: 'directory' });
+			}
+
+			this.createdParents.add(name);
+		}
 
 		for (const [asset, buffer] of Object.entries(assets)) {
 			const name = `${root}/${asset}`;
@@ -106,8 +122,16 @@ export class IPKBuilder {
 			services: Array.from(this.namespaces.service.values()),
 		};
 
+		const root = `usr/palm/packages/${this.metadata.id}`;
+
+		for (const name of getDirectoryParents(root)) {
+			if (!this.createdParents.has(name)) {
+				this.data.entry({ name, type: 'directory' });
+			}
+		}
+
 		this.data.entry(
-			{ name: `usr/palm/packages/${this.metadata.id}/packageinfo.json` },
+			{ name: join(root, 'packageinfo.json') },
 			JSON.stringify(packageInfo, null, '\t'),
 		);
 
