@@ -13,12 +13,11 @@ export class Deferred<T> {
 	}
 }
 
-export const getDirectoryParents = (dir: string) => {
+export const getDirectoryParents = (child: string) => {
 	const parents: string[] = [];
 
-	while (dir !== '.') {
+	for (let dir = child; dir !== '.'; dir = dirname(dir)) {
 		parents.push(dir);
-		dir = dirname(dir);
 	}
 
 	return parents.reverse();
