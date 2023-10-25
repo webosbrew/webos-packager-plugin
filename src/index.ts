@@ -17,6 +17,8 @@ import type {
 	WebpackEnvironment,
 } from './declarations';
 
+export type { FlavoredConfig } from './declarations';
+
 abstract class AssetPlugin implements Plugin {
 	protected readonly abstract pluginName: string;
 
